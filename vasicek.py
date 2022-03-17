@@ -121,7 +121,7 @@ if __name__ == '__main__':
                 break
             else:
                 console.log('Ordering...')
-                time.sleep(0.01)
+                time.sleep(1)
                 continue
 
         # 주문 완료 대기
