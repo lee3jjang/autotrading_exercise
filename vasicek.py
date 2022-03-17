@@ -48,7 +48,7 @@ if __name__ == '__main__':
                 'KRW-SAND', 'KRW-MANA', 'KRW-AAVE', 'KRW-STRK', 'KRW-SXP',
                 'KRW-LOOM', 'KRW-BORA', 'KRW-SOL', 'KRW-ETH', 'KRW-FLOW',
                 'KRW-NEAR', 'KRW-MATIC', 'KRW-AVAX', 'KRW-STRAX', 'KRW-XRP',
-                'KRW-CELO', 'KRW-AXS', 'KRW-HUNT', 'KRW-WAVES'
+                'KRW-AXS', 'KRW-HUNT', 'KRW-WAVES'
             ]
 
             result = []
@@ -116,7 +116,7 @@ if __name__ == '__main__':
                 
         # 매수 주문
         while True:
-            if pub.get_current_price(target['ticker']) <= target['price']:
+            if pub.get_current_price(target['ticker']) < target['price']:
                 account.buy_market_order(target['ticker'], CAPACITY)
                 break
             else:
