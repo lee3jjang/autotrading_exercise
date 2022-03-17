@@ -28,6 +28,7 @@ ACCESS_KEY = config['ACCESS_KEY']
 SECRET_KEY = config['SECRET_KEY']
 PAST = config['PAST']
 FUTURE = config['FUTURE']
+TICK = config['TICK']
 NUM = config['NUM']
 CAPACITY = config['CAPACITY']
 
@@ -36,6 +37,8 @@ account = pub.Upbit(ACCESS_KEY, SECRET_KEY)
 
 
 if __name__ == '__main__':
+
+    console.log('Bot Start...')
 
     while True:
 
@@ -77,7 +80,7 @@ if __name__ == '__main__':
                 # 손실 확률
                 t = FUTURE
                 r0 = r_t.iloc[-2]
-                dt = 10/60
+                dt = TICK/60
                 rt = np.zeros([NUM, int(FUTURE/dt)+1])
                 rt[:, 0] = r0
                 dw = norm.rvs(size=(NUM, int(FUTURE/dt)), loc=0, scale=np.sqrt(dt))
@@ -98,11 +101,12 @@ if __name__ == '__main__':
                 yld -= 1 + 0.01
                 
                 # 결과 적재
-                result.append([ticker, price[-1], a, b, sigma, lb, ub, yld.mean(), yld.std(), yld.mean()/yld.std(), value])
+                result.append([ticker, price[-1], r0, a, b, sigma, lb, ub, yld.mean(), yld.std(), yld.mean()/yld.std(), value])
 
             # 타겟 선정
-            target = (pd.DataFrame(result, columns=['ticker', 'price', 'a', 'b', 'sigma', 'lb', 'ub', 'yld_mean', 'yld_std', 'yld_rr', 'value'])
+            target = (pd.DataFrame(result, columns=['ticker', 'price', 'r0', 'a', 'b', 'sigma', 'lb', 'ub', 'yld_mean', 'yld_std', 'yld_rr', 'value'])
                 .query('yld_mean > 0.002')
+                .query('r0 < 0')
                 .query('lb < 0.99')
                 .sort_values(by='yld_rr', ascending=False)
             )
@@ -116,7 +120,7 @@ if __name__ == '__main__':
                 
         # 매수 주문
         while True:
-            if pub.get_current_price(target['ticker']) < target['price']:
+            if pub.get_current_price(target['ticker']) <= target['price']:
                 account.buy_market_order(target['ticker'], CAPACITY)
                 break
             else:
@@ -142,7 +146,7 @@ if __name__ == '__main__':
                 break
             else:
                 console.log(f"[Waiting] Ticker: {target['ticker']}, Lower: {buying_price*target['lb']:,.1f} < Current: {curr_price:,.1f} (Profit: {curr_price-buying_price:,.1f}) < Upper: {buying_price*target['ub']:,.1f}, Remaining: {(end_time - datetime.now()).seconds}s")
-                time.sleep(1)
+                time.sleep(TICK)
 
         # 매도 주문
         account.sell_market_order(ticker=target['ticker'], volume=balance)
